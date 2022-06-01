@@ -1,7 +1,10 @@
 #include "../defs_mpw-two-mfix.h"
 #include "../print_io.h"
 
-// wakey_wakey defs
+
+// ============================================================================
+// WAKEY WAKEY DEFINITIONS
+// ============================================================================
 // Define Wishbone Addresses in CFG
 #define cfg_reg_addr   (*(volatile uint32_t*)0x30000000)
 #define cfg_reg_ctrl   (*(volatile uint32_t*)0x30000004)
@@ -9,7 +12,28 @@
 #define cfg_reg_data_1 (*(volatile uint32_t*)0x3000000C)
 #define cfg_reg_data_2 (*(volatile uint32_t*)0x30000010)
 #define cfg_reg_data_3 (*(volatile uint32_t*)0x30000014)
+// ============================================================================
 
+
+// ============================================================================
+// FIRMWARE ROUTINES
+// ============================================================================
+void set_gpio(int pin)
+{
+    (volatile uint32_t) ((reg_mprj_datal) |= pin);
+}
+
+
+void clear_gpio(int pin)
+{
+    (volatile uint32_t) ((reg_mprj_datal) &= ~(pin));
+}
+// ============================================================================
+
+
+// ============================================================================
+// CFG METHODS
+// ============================================================================
 /*
  * cfg_store()
  * ----------------------------------------------------------------------------
@@ -63,8 +87,12 @@ void cfg_load(int addr, int *data)
     data[2] = cfg_reg_data_2;
     data[3] = cfg_reg_data_3;
 }
+// ============================================================================
 
 
+// ============================================================================
+// MEMORY TEST METHODS
+// ============================================================================
 /*
  * check_output()
  * ----------------------------------------------------------------------------
@@ -78,127 +106,10 @@ bool check_output(int *expected, int *observed) {
 }
 
 
-void mult_arr(int *arr) {
-    for (int k = 0; k < 4; k++) {
-        arr[k] *= 2;
-    }
-}
-
-// void print_int(int num)
-// {
-//     char str[128];
-//     int i = 126;
-//     bool neg = false;
-// 
-//     if (num < 0) {
-//         neg = true;
-//         num = -num;
-//     }
-// 
-//     while(num) {
-//         str[i] = '0' + (num % 10);
-//         num = num / 10;
-//         i = i - 1;
-//     }
-// 
-//     if (neg) {
-//         str[i] = '-';
-//         i = i - 1;
-//     }
-// 
-//     print(str);
-// }
-
-/*
-	Wakey Wakey Test:
-        1. Configure PDM Data Input Pin
-        2. Configure PDM Activate Input Pin
-        3. Configure PDM Clock Output Pin
-        4. Configure Wake Output Pin
-        5. Write CFG Data via wishbone
-        6. Read CFG Data via wishbone
-*/
-/* Returns true if the test passes and false if not. */
-bool run_test() {
-    int readbuf[4]  = {0, 0, 0, 0};
-    int writebuf[4] = {1, 2, 3, 4};
-
-    // Test 1: Simple Test
-    cfg_store(0, writebuf[3], writebuf[2], writebuf[1], writebuf[0]);
-    cfg_store(1, writebuf[3]*2, writebuf[2]*2, writebuf[1]*2, writebuf[0]*2);
-    cfg_store(2, writebuf[3]*4, writebuf[2]*4, writebuf[1]*4, writebuf[0]*4);
-    cfg_store(3, writebuf[3]*8, writebuf[2]*8, writebuf[1]*8, writebuf[0]*8);
-
-    cfg_load(0, readbuf);
-    if (!check_output(writebuf, readbuf)) return false;
-
-    cfg_load(1, readbuf);
-    mult_arr(writebuf);
-    if (!check_output(writebuf, readbuf)) return false;
-
-    cfg_load(2, readbuf);
-    mult_arr(writebuf);
-    if (!check_output(writebuf, readbuf)) return false;
-
-    int expected[4];
-
-    // WRITING
-
-    // Sequential write to conv1 memory banks
-    // for (int j = 0; j < 4; j++) {  // banks
-    for (int j = 0; j < 1; j++) {  // banks
-        for (int k = 0; k < 8; k++) {
-            cfg_store(k + j*0x10, k+3, k+2, k+1, k+0);
-        }
-    }
-    int k = 7;
-    cfg_store(0x40, k+3, k+2, k+1, k+0);  // shift
-
-    /*
-    // Sequential write to conv2 memory banks
-    for (int j = 5; j < 9; j++) {  // banks
-        for (int k = 0; k < 8; k++) {
-            cfg_store(k + j*0x10, k+3, k+2, k+1, k+0);
-        }
-    }
-    k = 7;
-    cfg_store(0x90, k+3, k+2, k+1, k+0);  // shift
-
-    // Sequential write to FC memory banks
-    for (int j = 0x100; j < 0x300; j += 0x100) {
-        for (int k = 0; k < 208; k++) {
-            cfg_store(j, k+3, k+2, k+1, k+0);
-        }
-    }
-    k = 207;
-    cfg_store(0x300, k+3, k+2, k+1, k+0);  // bias
-    cfg_store(0x400, k+3, k+2, k+1, k+0);  // bias
-    */
-
-    // READING
-
-    // for (int j = 0; j < 4; j++) {  // banks
-    for (int j = 0; j < 1; j++) {  // banks
-        for (int k = 0; k < 8; k++) {
-            // int expected[4] = {k+3, k+2, k+1, k+0};
-            int expected[4] = {k, k+1, k+2, k+3}; /// this is correct one
-            cfg_load(k + j*0x10, readbuf);
-            if (!check_output(expected, readbuf)) return false;
-        }
-    }
-    // int expected[4] = {k+3, k+2, k+1, k+0};
-    // k = 7;
-    // cfg_load(0x40, k+3, k+2, k+1, k+0);  // shift
-
-    return true;  // didn't fail earlier
-    //return false;  // test that returning false actually fails the test bench
-}
-
 /*
  * test_conv1_mem()
- *
- * Tests conv1 addresses via write and readback of sequential values
- *
+ * ----------------------------------------------------------------------------
+ * test conv1 addresses via write and readback of sequential values
  */
 bool test_conv1_mem()
 {
@@ -206,7 +117,7 @@ bool test_conv1_mem()
 
     // sequential writes
     // iterate and write through 4 conv1_mem banks: 3 weights, 1 bias
-    for (int bank = 0x00; bank < 0x40; bank = bank + 0x10) {
+    for (int bank = 0x00; bank < 0x40; bank += 0x10) {
         // each conv1_mem bank has 8 values
         for (int idx = 0x0; idx < 0x8; idx++) {
             cfg_store(bank + idx, idx + 3, idx + 2, idx + 1, idx);
@@ -220,7 +131,7 @@ bool test_conv1_mem()
     // sequential read
     char bank_char = '0';
     char idx_char = '0';
-    for (int bank = 0x00; bank < 0x40; bank = bank + 0x10) {
+    for (int bank = 0x00; bank < 0x40; bank += 0x10) {
         for (int idx = 0x0; idx < 0x8; idx++) {
             cfg_load(bank + idx, readbuf);
             int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
@@ -243,9 +154,8 @@ bool test_conv1_mem()
 
 /*
  * test_conv2_mem()
- *
- * Tests conv2 addresses via sequential writes
- *
+ * ----------------------------------------------------------------------------
+ * test conv2 addresses via write and readback of sequential values
  */
 bool test_conv2_mem()
 {
@@ -253,7 +163,7 @@ bool test_conv2_mem()
 
     // sequential writes
     // iterate and write through 4 conv2_mem banks: 3 weights, 1 bias
-    for (int bank = 0x50; bank < 0x90; bank = bank + 0x10) {
+    for (int bank = 0x50; bank < 0x90; bank += 0x10) {
         // each conv2_mem bank has 16 values
         for (int idx = 0x00; idx < 0x10; idx++) {
             cfg_store(bank + idx, idx + 3, idx + 2, idx + 1, idx);
@@ -265,7 +175,7 @@ bool test_conv2_mem()
     cfg_store(0x90, idx + 3, idx + 2, idx + 1, idx);
 
     // sequential read
-    for (int bank = 0x50; bank < 0x90; bank = bank + 0x10) {
+    for (int bank = 0x50; bank < 0x90; bank += 0x10) {
         for (int idx = 0x00; idx < 0x10; idx++) {
             cfg_load(bank + idx, readbuf);
             int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
@@ -288,9 +198,8 @@ bool test_conv2_mem()
 
 /*
  * test_fc_mem()
- *
- * Tests fc_mem addresses via sequential writes
- *
+ * ----------------------------------------------------------------------------
+ * test fc_mem addresses via write and readback of sequential values
  */
 bool test_fc_mem()
 {
@@ -298,7 +207,7 @@ bool test_fc_mem()
 
     // sequential writes
     // iterate and write through fc_mem weight 0 (0x100) and weight 1 (0x200)
-    for (int bank = 0x100; bank < 0x300; bank = bank + 0x100) {
+    for (int bank = 0x100; bank < 0x300; bank += 0x100) {
         // each fc_mem weight bank has 208 values
         for (int idx = 0x00; idx < 0xD0; idx++) {
             // fc_mem banks start at 0x50
@@ -306,19 +215,48 @@ bool test_fc_mem()
         }
     }
 
+    int idx = 0;
+    cfg_store(0x300, idx + 3, idx + 2, idx + 1, idx + 0);  // bias 0
+    cfg_store(0x400, idx + 3, idx + 2, idx + 1, idx + 0);  // bias 1
+
     // sequential read
-    for (int bank = 0x100; bank < 0x300; bank = bank + 0x100) {
+    for (int bank = 0x100; bank < 0x300; bank += 0x100) {
         for (int idx = 0x00; idx < 0xD0; idx++) {
             cfg_load(bank + idx, readbuf);
             int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
-            if (!check_output(expected, readbuf)) return false;
+            if (!check_output(expected, readbuf)) {
+                // return false;
+            }
         }
+    }
+
+    // read from fc_mem bias 0 value
+    idx = 0;
+    cfg_load(0x300, readbuf);
+    int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
+    if (!check_output(expected, readbuf)) {
+        return false;
+    }
+
+    // read from fc_mem bias 1 value
+    cfg_load(0x400, readbuf);
+    if (!check_output(expected, readbuf)) {
+        return false;
     }
 
     return true;
 }
+// ============================================================================
 
-/* Test the logic analyzer using the waveforms. Hardcode la_data_out to 'h7777777...
+
+// ============================================================================
+// LOGIC ANALYZER TEST METHODS
+// ============================================================================
+/* 
+ * la_test() TODO
+ * ----------------------------------------------------------------------------
+ * test the logic analyzer using the waveforms.
+ * Hardcode la_data_out to 'h7777777...
  * in user_project_wrapper.
  */
 void la_test() {
@@ -338,30 +276,27 @@ void la_test() {
     reg_la1_oenb = reg_la1_iena = 0x0;  // test switching speed
     reg_la1_oenb = reg_la1_iena = 0xFFFFFFFF;
     reg_la1_oenb = reg_la1_iena = 0x0;
-
 }
+// ============================================================================
 
 
-// --------------------------------------------------------
-// Firmware routines
-// --------------------------------------------------------
-
-void set_gpio(int pin)
-{
-    (volatile uint32_t) ((reg_mprj_datal) |= pin);
-}
-
-void clear_gpio(int pin)
-{
-    (volatile uint32_t) ((reg_mprj_datal) &= ~(pin));
-}
+// ============================================================================
+// MAIN ROUTINE
+// ============================================================================
+/*
+ * main()
+ * ----------------------------------------------------------------------------
+ * Wakey Wakey Test Protocol
+ *  1. Configure PDM Data Input Pin
+ *  2. Configure PDM Activate Input Pin
+ *  3. Configure PDM Clock Output Pin
+ *  4. Configure Wake Output Pin
+ *  5. Write CFG Data via wishbone
+ *  6. Read CFG Data via wishbone
+ */
 
 void main()
 {
-	int i, j, k;
-
-	i = 1;
-
     // reg_mprj_io_37 = GPIO_MODE_MGMT_STD_OUTPUT;
     // reg_mprj_io_36 = GPIO_MODE_MGMT_STD_INPUT_NOPULL;
     // reg_mprj_io_35 = GPIO_MODE_MGMT_STD_OUTPUT;
@@ -474,37 +409,13 @@ void main()
     reg_mprj_io_2 = GPIO_MODE_USER_STD_INPUT_NOPULL;   // 0x0403
     reg_mprj_io_1 = GPIO_MODE_USER_STD_BIDIRECTIONAL;  // 0x1803
 
-//	reg_mprj_datal = 0x00000000;
-//	reg_mprj_datah = 0x00000000;
-
-//    spi_init();
-
-//    print("Hello!\n");
-
-    char *msg[] = {
-//  "******************* ",
-    " Woowzaaa!!         ",
-    "                    ",
-    " I'm Caravel !!     ",
-    "      I'm Alive !!! ",
-//  "******************* ",
-    };
-
-    int n = 4;
-
-//    putchar("|"); putchar(0x80);
-//    putchar("|"); putchar(0x9e);
-//    putchar("|"); putchar(0xbc);
-
-    //test wakey_wakey wishbone interface
-//    bool success = run_test();
-
     // sleep until LCD boots up
-    for (j = 0; j < 20000; j++);
+    for (int i = 0; i < 20000; i++);
 
     // clear screen
-    print("|"); putchar(0x2d); // clear screen
+    print("|"); putchar(0x2d); 
 
+    // test conv1 mem
     print("CONV1 MEM: ");
     if (test_conv1_mem()) {
         print("PASS");
@@ -513,6 +424,7 @@ void main()
     }
     print("\n");
 
+    // test conv2 mem
     print("CONV2 MEM: ");
     if (test_conv2_mem()) {
         print("PASS");
@@ -521,74 +433,12 @@ void main()
     }
     print("\n");
 
+    // test fc mem
     print("   FC MEM: ");
     if (test_fc_mem()) {
         print("PASS");
     } else {
         print("FAIL");
     }
-
-    while(1){}
-
-	while(0) {
-//	    print("|"); putchar(0x2d); // clear screen
-
-        for (i=0; i < 2; i++) {
-            reg_gpio_data = 0x0;
-            for (j = 0; j < 3000; j++);
-            reg_gpio_data = 0x1;
-            for (j = 0; j < 5000; j++);
-        }
-
-        if (run_test()) {
-            print("Pass");
-        } else {
-            print("fail");
-        }
-
-
-        for (j = 0; j < 10000; j++);
-
-//        for (i=0; i < 2; i++) {
-//            reg_gpio_data = 0x0;
-//            for (j = 0; j < 3000; j++);
-//            reg_gpio_data = 0x1;
-//            for (j = 0; j < 5000; j++);
-//        }
-
-//        i = 0;
-//        while (i < 38) {
-//            for (j = i; j < i+4; j++) {
-////                print("|"); putchar(0x2d); // clear screen
-//                print_dec(j); print(" : 0x"); print_hex(reg_mprj_io_0 + j*4, 4); print("\n");
-////                print_dec(j); print(" : 0x"); print_hex(reg_mprj_io_0 + j*4, 4); print("\n");
-////                print_dec(j); print(" : 0x"); print_hex(reg_mprj_io_0 + j*4, 4); print("\n");
-//                for (k = 0; k < 10000; k++);
-//            }
-//            i += 4;
-//        }
-//
-//        for (j = 0; j < 30000; j++);
-
-    }
-
-//        reg_mprj_datal = 0x00080000;
-//        reg_mprj_datal = 0xffffffff;
-//        reg_mprj_datah = 0xffffffff;
-//        set_gpio(19);
-//        reg_gpio_data = 0x0;
-//
-//        for (j = 0; j < 3000; j++);
-//
-////       	reg_mprj_datal = 0x00000000;
-////       	reg_mprj_datah = 0x00000000;
-////        clear_gpio(19);
-//        reg_gpio_data = 0x1;
-//
-//        for (j = 0; j < 3000; j++);
-
-//        putchar('x');
-
-//	}
 }
-
+// ============================================================================
