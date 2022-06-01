@@ -305,64 +305,28 @@ void la_test() {
 /*
  * main()
  * ----------------------------------------------------------------------------
- * Wakey Wakey Test Protocol
- *  1. Configure PDM Data Input Pin
- *  2. Configure PDM Activate Input Pin
- *  3. Configure PDM Clock Output Pin
- *  4. Configure Wake Output Pin
+ * Wakey Wakey Setup Protocol
+ *  1. Configure Wake Output Pin IO_OUT[37]
+ *  2. Configure PDM Data Input Pin IO_IN[36]
+ *  3. Configure PDM Clock Output Pin IO_OUT[35]
+ *  4. Configure PDM Activate Input Pin IO_IN[34]
  *  5. Write CFG Data via wishbone
- *  6. Read CFG Data via wishbone
+ *  6. Read and Verify CFG Data via wishbone
  */
 
 void main()
 {
-    // reg_mprj_io_37 = GPIO_MODE_MGMT_STD_OUTPUT;
-    // reg_mprj_io_36 = GPIO_MODE_MGMT_STD_INPUT_NOPULL;
-    // reg_mprj_io_35 = GPIO_MODE_MGMT_STD_OUTPUT;
-    // reg_mprj_io_34 = GPIO_MODE_MGMT_STD_INPUT_PULLUP;
+    // 1. Configure Wake Output Pin IO_OUT[37]
     reg_mprj_io_37 = GPIO_MODE_USER_STD_OUTPUT;
+
+    // 2. Configure PDM Data Input Pin IO_IN[36]
     reg_mprj_io_36 = GPIO_MODE_USER_STD_INPUT_NOPULL;
+
+    // 3. Configure PDM Clock Output Pin IO_OUT[35]
     reg_mprj_io_35 = GPIO_MODE_USER_STD_OUTPUT;
+
+    // 4. Configure PDM Activate Input Pin IO_IN[34]
     reg_mprj_io_34 = GPIO_MODE_USER_STD_INPUT_PULLUP;
-    reg_mprj_io_33 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_32 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-    reg_mprj_io_31 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_30 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_29 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_28 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-    reg_mprj_io_27 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_26 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_25 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_24 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-    reg_mprj_io_23 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_22 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_21 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_20 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_19 = GPIO_MODE_MGMT_STD_OUTPUT;
-//
-//    reg_mprj_io_18 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_17 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_16 = GPIO_MODE_MGMT_STD_OUTPUT;
-//
-//    reg_mprj_io_15 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_14 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_13 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_12 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_11 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_10 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_9 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_8 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_7 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_6 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_5 = GPIO_MODE_MGMT_STD_OUTPUT;
-//
-//    reg_mprj_io_4 = GPIO_MODE_USER_STD_INPUT_NOPULL;
-//    reg_mprj_io_3 = GPIO_MODE_USER_STD_INPUT_NOPULL;
-//    reg_mprj_io_2 = GPIO_MODE_USER_STD_INPUT_NOPULL;   // 0x0403
-//    reg_mprj_io_1 = GPIO_MODE_USER_STD_BIDIRECTIONAL;  // 0x1803
 
     reg_mprj_io_6 = 0x7ff;
 
@@ -379,54 +343,6 @@ void main()
 	reg_gpio_pu = 0x0;
 	reg_gpio_pd = 0x0;
 	reg_gpio_data = 0x1;
-
-    // reg_mprj_io_37 = GPIO_MODE_MGMT_STD_OUTPUT;
-    // reg_mprj_io_36 = GPIO_MODE_MGMT_STD_INPUT_NOPULL;
-    // reg_mprj_io_35 = GPIO_MODE_MGMT_STD_OUTPUT;
-    // reg_mprj_io_34 = GPIO_MODE_MGMT_STD_INPUT_PULLUP;
-    reg_mprj_io_37 = GPIO_MODE_USER_STD_OUTPUT;
-    reg_mprj_io_36 = GPIO_MODE_USER_STD_INPUT_NOPULL;
-    reg_mprj_io_35 = GPIO_MODE_USER_STD_OUTPUT;
-    reg_mprj_io_34 = GPIO_MODE_USER_STD_INPUT_PULLUP;
-    reg_mprj_io_33 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_32 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-    reg_mprj_io_31 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_30 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_29 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_28 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-    reg_mprj_io_27 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_26 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_25 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_24 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-    reg_mprj_io_23 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_22 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_21 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_20 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_19 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-//    reg_mprj_io_18 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_17 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_16 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-//    reg_mprj_io_15 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_14 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_13 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_12 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_11 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_10 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_9 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_8 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_7 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_6 = GPIO_MODE_MGMT_STD_OUTPUT;
-//    reg_mprj_io_5 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-    reg_mprj_io_4 = GPIO_MODE_USER_STD_INPUT_NOPULL;
-    reg_mprj_io_3 = GPIO_MODE_USER_STD_INPUT_NOPULL;
-    reg_mprj_io_2 = GPIO_MODE_USER_STD_INPUT_NOPULL;   // 0x0403
-    reg_mprj_io_1 = GPIO_MODE_USER_STD_BIDIRECTIONAL;  // 0x1803
 
     // sleep until LCD boots up
     for (int i = 0; i < 20000; i++);
