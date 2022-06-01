@@ -98,8 +98,8 @@ void cfg_load(int addr, int *data)
  * ----------------------------------------------------------------------------
  * check if 2 int arrays of length 4 contain the same values
  */
-bool check_output(int *expected, int *observed) {
-    for (int k = 0; k < 4; k++) {
+bool check_output(int *expected, int *observed, int len) {
+    for (int k = 0; k < len; k++) {
         if (expected[k] != observed[k]) return false;
     }
     return true;
@@ -129,13 +129,12 @@ bool test_conv1_mem()
     cfg_store(0x40, idx + 3, idx + 2, idx + 1, idx);
 
     // sequential read
-    char bank_char = '0';
-    char idx_char = '0';
     for (int bank = 0x00; bank < 0x40; bank += 0x10) {
         for (int idx = 0x0; idx < 0x8; idx++) {
             cfg_load(bank + idx, readbuf);
             int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
-            if (!check_output(expected, readbuf)) {
+            // conv1 data needs to check all 4 bytes
+            if (!check_output(expected, readbuf, 4)) {
                 return false;
             }
         }
@@ -144,7 +143,7 @@ bool test_conv1_mem()
     // read from conv1_mem shift value
     cfg_load(0x40, readbuf);
     int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
-    if (!check_output(expected, readbuf)) {
+    if (!check_output(expected, readbuf, 4)) {
         return false;
     }
 
@@ -179,7 +178,26 @@ bool test_conv2_mem()
         for (int idx = 0x00; idx < 0x10; idx++) {
             cfg_load(bank + idx, readbuf);
             int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
-            if (!check_output(expected, readbuf)) {
+            // conv2 data needs to check only first 2 bytes
+            if (!check_output(expected, readbuf, 2)) {
+                print("|"); putchar(0x2d); 
+                print("\n");
+                print_hex(expected[0], 1);
+                print(" ");
+                print_hex(expected[1], 1);
+                print(" ");
+                print_hex(expected[2], 1);
+                print(" ");
+                print_hex(expected[3], 1);
+                print("\n");
+                print_hex(readbuf[0], 1);
+                print(" ");
+                print_hex(readbuf[1], 1);
+                print(" ");
+                print_hex(readbuf[2], 1);
+                print(" ");
+                print_hex(readbuf[3], 1);
+                print("\n");
                 return false;
             }
         }
@@ -188,7 +206,7 @@ bool test_conv2_mem()
     // read from conv2_mem shift value
     cfg_load(0x90, readbuf);
     int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
-    if (!check_output(expected, readbuf)) {
+    if (!check_output(expected, readbuf, 2)) {
         return false;
     }
 
@@ -224,8 +242,9 @@ bool test_fc_mem()
         for (int idx = 0x00; idx < 0xD0; idx++) {
             cfg_load(bank + idx, readbuf);
             int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
-            if (!check_output(expected, readbuf)) {
-                // return false;
+            // fc data needs to check only first 1 byte
+            if (!check_output(expected, readbuf, 1)) {
+                return false;
             }
         }
     }
@@ -234,13 +253,13 @@ bool test_fc_mem()
     idx = 0;
     cfg_load(0x300, readbuf);
     int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
-    if (!check_output(expected, readbuf)) {
+    if (!check_output(expected, readbuf, 1)) {
         return false;
     }
 
     // read from fc_mem bias 1 value
     cfg_load(0x400, readbuf);
-    if (!check_output(expected, readbuf)) {
+    if (!check_output(expected, readbuf, 1)) {
         return false;
     }
 
