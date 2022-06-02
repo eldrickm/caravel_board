@@ -100,7 +100,22 @@ void cfg_load(int addr, int *data)
  */
 bool check_output(int *expected, int *observed, int len) {
     for (int k = 0; k < len; k++) {
-        if (expected[k] != observed[k]) return false;
+        if (expected[k] != observed[k]) {
+            print("\n");
+            print("EXP: ");
+            for (int i = 0; i < len; i++) {
+                print_hex(expected[i], 1);
+                print(" ");
+            }
+            print("\n");
+            print("OBS: ");
+            for (int i = 0; i < len; i++) {
+                print_hex(observed[i], 1);
+                print(" ");
+            }
+            print("\n");
+            return false;
+        }
     }
     return true;
 }
@@ -180,24 +195,6 @@ bool test_conv2_mem()
             int expected[4] = {idx, idx + 1, idx + 2, idx + 3};
             // conv2 data needs to check only first 2 bytes
             if (!check_output(expected, readbuf, 2)) {
-                print("|"); putchar(0x2d); 
-                print("\n");
-                print_hex(expected[0], 1);
-                print(" ");
-                print_hex(expected[1], 1);
-                print(" ");
-                print_hex(expected[2], 1);
-                print(" ");
-                print_hex(expected[3], 1);
-                print("\n");
-                print_hex(readbuf[0], 1);
-                print(" ");
-                print_hex(readbuf[1], 1);
-                print(" ");
-                print_hex(readbuf[2], 1);
-                print(" ");
-                print_hex(readbuf[3], 1);
-                print("\n");
                 return false;
             }
         }
@@ -339,10 +336,27 @@ void main()
     while (reg_mprj_xfer == 1);
 
 	// Enable GPIO (all output, ena = 0)
-	reg_gpio_ena = 0x0;
-	reg_gpio_pu = 0x0;
-	reg_gpio_pd = 0x0;
-	reg_gpio_data = 0x1;
+    reg_gpio_ena = 0x0;
+    reg_gpio_pu = 0x0;
+    reg_gpio_pd = 0x0;
+    reg_gpio_data = 0x1;
+
+    reg_la0_oenb = reg_la0_iena = 0xFFFFFFFF;
+    reg_la1_oenb = reg_la1_iena = 0xFFFFFFFF;
+    reg_la2_oenb = reg_la2_iena = 0xFFFFFFFF;
+    reg_la3_oenb = reg_la3_iena = 0xFFFFFFFF;
+
+    // reg_la0_data = 0x00000000;
+    reg_la0_data = 0x00000000; //  [31:00] - writing 1 to [0] causes C1/C2 fail, enables ctl_pipeline_en
+    reg_la1_data = 0x00000000; //  [63:32]
+    reg_la2_data = 0x00000000; //  [95:64]
+    reg_la3_data = 0x00400000; // [127:96]
+    // wake is     0x00400000 (3rd bit is 118)
+
+    reg_la0_oenb = reg_la0_iena = 0xFFFFFFFF; //  [31:00], enable [0] for ctl_pipeline_en
+    reg_la1_oenb = reg_la1_iena = 0xFFFFFFFF; //  [63:32]
+    reg_la2_oenb = reg_la2_iena = 0xFFFFFFFF; //  [95:64]
+    reg_la3_oenb = reg_la3_iena = 0xFFBFFFFF; // [127:96], enable [117]
 
     // sleep until LCD boots up
     for (int i = 0; i < 20000; i++);
@@ -374,6 +388,14 @@ void main()
         print("PASS");
     } else {
         print("FAIL");
+    }
+
+    while (1) {
+        // toggle LED!
+        reg_gpio_data = 0x1;
+        for (int i = 0; i < 20000; i++);
+        reg_gpio_data = 0x1;
+        for (int i = 0; i < 20000; i++);
     }
 }
 // ============================================================================
