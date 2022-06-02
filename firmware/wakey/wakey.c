@@ -347,13 +347,13 @@ void main()
     reg_la3_oenb = reg_la3_iena = 0xFFFFFFFF;
 
     // reg_la0_data = 0x00000000;
-    reg_la0_data = 0x00000000; //  [31:00] - writing 1 to [0] causes C1/C2 fail, enables ctl_pipeline_en
+    reg_la0_data = 0x00000001; //  [31:00] - writing 1 to [0] causes C1/C2 fail, enables ctl_pipeline_en
     reg_la1_data = 0x00000000; //  [63:32]
     reg_la2_data = 0x00000000; //  [95:64]
     reg_la3_data = 0x00400000; // [127:96]
     // wake is     0x00400000 (3rd bit is 118)
 
-    reg_la0_oenb = reg_la0_iena = 0xFFFFFFFF; //  [31:00], enable [0] for ctl_pipeline_en
+    reg_la0_oenb = reg_la0_iena = 0xFFFFFFFE; //  [31:00], enable [0] for ctl_pipeline_en
     reg_la1_oenb = reg_la1_iena = 0xFFFFFFFF; //  [63:32]
     reg_la2_oenb = reg_la2_iena = 0xFFFFFFFF; //  [95:64]
     reg_la3_oenb = reg_la3_iena = 0xFFBFFFFF; // [127:96], enable [117]
