@@ -314,20 +314,62 @@ void la_test() {
 void main()
 {
     // 1. Configure Wake Output Pin IO_OUT[37]
-    reg_mprj_io_37 = GPIO_MODE_USER_STD_OUTPUT;
+    // reg_mprj_io_37 = GPIO_MODE_USER_STD_OUTPUT;
 
     // 2. Configure PDM Data Input Pin IO_IN[36]
-    reg_mprj_io_36 = GPIO_MODE_USER_STD_INPUT_NOPULL;
+    // reg_mprj_io_36 = GPIO_MODE_USER_STD_INPUT_NOPULL;
 
     // 3. Configure PDM Clock Output Pin IO_OUT[35]
-    reg_mprj_io_35 = GPIO_MODE_USER_STD_OUTPUT;
+    // reg_mprj_io_35 = GPIO_MODE_USER_STD_OUTPUT;
 
     // 4. Configure PDM Activate Input Pin IO_IN[34]
-    reg_mprj_io_34 = GPIO_MODE_USER_STD_INPUT_PULLUP;
+    // reg_mprj_io_34 = GPIO_MODE_USER_STD_INPUT_PULLUP;
+
+    reg_mprj_io_37 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_36 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_35 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_34 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_33 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_32 = GPIO_MODE_MGMT_STD_OUTPUT;
+    
+    reg_mprj_io_31 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_30 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_29 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_28 = GPIO_MODE_MGMT_STD_OUTPUT;
+    
+    reg_mprj_io_27 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_26 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_25 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_24 = GPIO_MODE_MGMT_STD_OUTPUT;
+    
+    reg_mprj_io_23 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_22 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_21 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_20 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_19 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_18 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_17 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_16 = GPIO_MODE_MGMT_STD_OUTPUT;
+    
+    reg_mprj_io_15 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_14 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_13 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_12 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_11 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_10 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_9  = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_8  = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_7  = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_6  = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_5  = GPIO_MODE_MGMT_STD_OUTPUT;
+    
+    reg_mprj_io_4 = GPIO_MODE_USER_STD_OUTPUT;
+    reg_mprj_io_3 = GPIO_MODE_USER_STD_OUTPUT;
+    reg_mprj_io_2 = GPIO_MODE_USER_STD_OUTPUT;   // 0x0403
+    reg_mprj_io_1 = GPIO_MODE_USER_STD_OUTPUT;  // 0x1803
 
     reg_mprj_io_6 = 0x7ff;
 
-    reg_mprj_datal = 0;
 
     reg_uart_clkdiv = 1042;
     reg_uart_enable = 1;
@@ -350,13 +392,13 @@ void main()
     reg_la0_data = 0x00000001; //  [31:00] - writing 1 to [0] causes C1/C2 fail, enables ctl_pipeline_en
     reg_la1_data = 0x00000000; //  [63:32]
     reg_la2_data = 0x00000000; //  [95:64]
-    reg_la3_data = 0x00400000; // [127:96]
+    reg_la3_data = 0x00F00000; // [127:96]
     // wake is     0x00400000 (3rd bit is 118)
 
-    reg_la0_oenb = reg_la0_iena = 0xFFFFFFFE; //  [31:00], enable [0] for ctl_pipeline_en
+    reg_la0_oenb = reg_la0_iena = 0xFFFFFFFF; //  [31:00], enable [0] for ctl_pipeline_en
     reg_la1_oenb = reg_la1_iena = 0xFFFFFFFF; //  [63:32]
     reg_la2_oenb = reg_la2_iena = 0xFFFFFFFF; //  [95:64]
-    reg_la3_oenb = reg_la3_iena = 0xFFBFFFFF; // [127:96], enable [117]
+    reg_la3_oenb = reg_la3_iena = 0xFF0FFFFF; // [127:96], enable [117]
 
     // sleep until LCD boots up
     for (int i = 0; i < 20000; i++);
@@ -393,8 +435,17 @@ void main()
     while (1) {
         // toggle LED!
         reg_gpio_data = 0x1;
+        reg_mprj_datal = 0xFFFFFFFF;
+        reg_mprj_datah = 0xFFFFFFFF;
+        reg_mprj_xfer = 1;
+        while (reg_mprj_xfer == 1);
         for (int i = 0; i < 20000; i++);
-        reg_gpio_data = 0x1;
+
+        reg_gpio_data = 0x0;
+        reg_mprj_datal = 0x00000000;
+        reg_mprj_datah = 0x00000000;
+        reg_mprj_xfer = 1;
+        while (reg_mprj_xfer == 1);
         for (int i = 0; i < 20000; i++);
     }
 }
